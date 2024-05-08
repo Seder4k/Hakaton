@@ -1,0 +1,406 @@
+import pygame
+import sys
+import random
+
+# Ініціалізація Pygame
+pygame.init()
+
+# Кольори
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+
+# Розміри екрану
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
+# Клас для Маріо
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((32, 32))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        self.speed_x = 0
+        self.speed_y = 0
+
+    def update(self):
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+        # Обмеження руху гравця за межі екрану
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
+
+# Клас для рівня
+class Level:
+    def __init__(self, level_number):
+        self.platform_list = pygame.sprite.Group()
+        self.level_number = level_number
+        self.create_level(level_number)
+
+    def create_level(self, level_number):
+        # Створюємо рівень з однаковими розмірами перешкод
+        for _ in range(level_number * 4):
+            platform = Platform()
+            self.platform_list.add(platform)
+
+    def draw(self, screen):
+        screen.fill(BLACK)
+        self.platform_list.draw(screen)
+
+# Клас для монстрів
+class Monster(pygame.sprite.Sprite):
+    def __init__(self, platforms):
+        super().__init__()
+        self.image = pygame.Surface((32, 32))
+        self.image.fill(RED)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
+        self.rect.y = random.randrange(SCREEN_HEIGHT - self.rect.height)
+        self.speed_x = random.choice([-1, 1])  # Зменшив швидкість монстрів
+        self.speed_y = random.choice([-1, 1])  # Зменшив швидкість монстрів
+        self.platforms = platforms
+
+    def update(self):
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+
+        # Відбивання від країв екрану
+        if self.rect.left <= 0 or self.rect.right >= SCREEN_WIDTH:
+            self.speed_x *= -1
+        if self.rect.top <= 0 or self.rect.bottom >= SCREEN_HEIGHT:
+            self.speed_y *= -1
+
+# Клас для перешкод
+class Platform(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((50, 50))  # Всі перешкоди мають однаковий розмір
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
+        self.rect.y = random.randrange(SCREEN_HEIGHT - self.rect.height)
+# Приклад завантаження зображень
+background_image = pygame.image.load("background.jpg")
+player_image = pygame.image.load("player.png")
+enemy_image = pygame.image.load("enemy.png")
+next_level_block_image = pygame.image.load("next_level_block.png")
+
+# Клас для переходу на наступний рівень
+class NextLevelBlock(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((40, 40))
+        self.image.fill(BLUE)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
+        self.rect.y = random.randrange(SCREEN_HEIGHT - self.rect.height)
+
+# Функція для відображення повідомлення про програш
+def show_game_over_screen(screen):
+    screen.fill(RED)
+    font = pygame.font.SysFont(None, 50)
+    text = font.render("Ви програли. Натисніть SPACE для повторної гри.", True, WHITE)
+    screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - text.get_height()//2))
+    pygame.display.flip()
+
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    waiting = False
+
+# Функція для відображення повідомлення про перемогу
+def show_win_screen(screen):
+    screen.fill(BLUE)
+    font = pygame.font.SysFont(None, 50)
+    text = font.render("Ви перемогли! Натисніть SPACE для повторної гри.", True, WHITE)
+    screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - text.get_height()//2))
+    pygame.display.flip()
+
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    waiting = False
+
+# Функція для відображення головного меню
+def show_main_menu(screen):
+    screen.fill(BLACK)
+    font = pygame.font.SysFont(None, 50)
+    title_text = font.render("Super Mario Clone", True, WHITE)
+    screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 100))
+
+    # Кнопки меню
+    button_font = pygame.font.SysFont(None, 30)
+
+    start_button = button_font.render("Start Game", True, WHITE)
+    start_button_rect = start_button.get_rect(center=(SCREEN_WIDTH//2, 250))
+    screen.blit(start_button, start_button_rect)
+
+    settings_button = button_font.render("Settings", True, WHITE)
+    settings_button_rect = settings_button.get_rect(center=(SCREEN_WIDTH//2, 320))
+    screen.blit(settings_button, settings_button_rect)
+
+    quit_button = button_font.render("Quit", True, WHITE)
+    quit_button_rect = quit_button.get_rect(center=(SCREEN_WIDTH//2, 390))
+    screen.blit(quit_button, quit_button_rect)
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if start_button_rect.collidepoint(mouse_pos):
+                    return "game"
+                elif settings_button_rect.collidepoint(mouse_pos):
+                    return "settings"
+                elif quit_button_rect.collidepoint(mouse_pos):
+                    pygame.quit()
+                    sys.exit()
+
+# Функція для відображення меню налаштувань
+def show_settings_menu(screen):
+    screen.fill(BLACK)
+    font = pygame.font.SysFont(None, 50)
+    title_text = font.render("Settings", True, WHITE)
+    screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 100))
+
+    button_font = pygame.font.SysFont(None, 30)
+
+    controls_button = button_font.render("Controls", True, WHITE)
+    controls_button_rect = controls_button.get_rect(center=(SCREEN_WIDTH//2, 250))
+    screen.blit(controls_button, controls_button_rect)
+
+    levels_button = button_font.render("Levels", True, WHITE)
+    levels_button_rect = levels_button.get_rect(center=(SCREEN_WIDTH//2, 320))
+    screen.blit(levels_button, levels_button_rect)
+
+    back_button = button_font.render("Back", True, WHITE)
+    back_button_rect = back_button.get_rect(center=(SCREEN_WIDTH//2, 390))
+    screen.blit(back_button, back_button_rect)
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if controls_button_rect.collidepoint(mouse_pos):
+                    return "controls"
+                elif levels_button_rect.collidepoint(mouse_pos):
+                    return "levels"
+                elif back_button_rect.collidepoint(mouse_pos):
+                    return "back"
+
+# Функція для відображення меню налаштувань контролів
+def show_controls_menu(screen):
+    screen.fill(BLACK)
+    font = pygame.font.SysFont(None, 50)
+    title_text = font.render("Controls", True, WHITE)
+    screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 100))
+
+    button_font = pygame.font.SysFont(None, 30)
+
+    back_button = button_font.render("Back", True, WHITE)
+    back_button_rect = back_button.get_rect(center=(SCREEN_WIDTH//2, 390))
+    screen.blit(back_button, back_button_rect)
+
+    # Відображення підказок по управлінню
+    controls_text = [
+        "Управління гравцем: Стрілки",
+        "Пауза: Esc"
+    ]
+    y_offset = 200
+    for text in controls_text:
+        control_text = button_font.render(text, True, WHITE)
+        screen.blit(control_text, (SCREEN_WIDTH//2 - control_text.get_width()//2, y_offset))
+        y_offset += 40
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if back_button_rect.collidepoint(mouse_pos):
+                    return "back"
+
+# Функція для відображення меню налаштувань рівнів
+def show_levels_menu(screen):
+    screen.fill(BLACK)
+    font = pygame.font.SysFont(None, 50)
+    title_text = font.render("Levels", True, WHITE)
+    screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 100))
+
+    button_font = pygame.font.SysFont(None, 30)
+
+    increase_button = button_font.render("Increase Level", True, WHITE)
+    increase_button_rect = increase_button.get_rect(center=(SCREEN_WIDTH//2, 250))
+    screen.blit(increase_button, increase_button_rect)
+
+    decrease_button = button_font.render("Decrease Level", True, WHITE)
+    decrease_button_rect = decrease_button.get_rect(center=(SCREEN_WIDTH//2, 320))
+    screen.blit(decrease_button, decrease_button_rect)
+
+    back_button = button_font.render("Back", True, WHITE)
+    back_button_rect = back_button.get_rect(center=(SCREEN_WIDTH//2, 390))
+    screen.blit(back_button, back_button_rect)
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if increase_button_rect.collidepoint(mouse_pos):
+                    return "increase"
+                elif decrease_button_rect.collidepoint(mouse_pos):
+                    return "decrease"
+                elif back_button_rect.collidepoint(mouse_pos):
+                    return "back"
+
+# Функція для відображення гри
+def show_game_screen(screen):
+    # Ініціалізація гри
+    current_level = 1
+    game_speed = 60
+
+    player = Player()
+    level = Level(current_level)
+    platforms = level.platform_list
+    monsters = pygame.sprite.Group()
+    next_level_blocks = pygame.sprite.Group()
+    next_level_block = NextLevelBlock()
+    next_level_blocks.add(next_level_block)
+
+    for _ in range(current_level * 2):  
+        monster = Monster(platforms)
+        monsters.add(monster)
+
+    # Головний цикл гри
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return "menu"
+
+        # Обробка клавіш управління
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            player.speed_x = -5
+        elif keys[pygame.K_RIGHT]:
+            player.speed_x = 5
+        else:
+            player.speed_x = 0
+        if keys[pygame.K_UP]:
+            player.speed_y = -5
+        elif keys[pygame.K_DOWN]:
+            player.speed_y = 5
+        else:
+            player.speed_y = 0
+
+        player.update()
+        monsters.update()
+
+        # Перевірка колізій гравця та монстрів з перешкодами
+        if pygame.sprite.spritecollide(player, platforms, False):
+            if player.speed_x < 0:
+                player.rect.left = pygame.sprite.spritecollide(player, platforms, False)[0].rect.right
+            elif player.speed_x > 0:
+                player.rect.right = pygame.sprite.spritecollide(player, platforms, False)[0].rect.left
+            elif player.speed_y < 0:
+                player.rect.top = pygame.sprite.spritecollide(player, platforms, False)[0].rect.bottom
+            elif player.speed_y > 0:
+                player.rect.bottom = pygame.sprite.spritecollide(player, platforms, False)[0].rect.top
+
+        # Перевірка, чи гравець досяг переходу на наступний рівень
+        if pygame.sprite.spritecollide(player, next_level_blocks, False):
+            current_level += 1
+            if current_level > 5:
+                show_win_screen(screen)
+                current_level = 1
+                level = Level(current_level)
+            else:
+                level = Level(current_level)
+                monsters.empty()
+                for _ in range(current_level * 2):  
+                    monster = Monster(platforms)
+                    monsters.add(monster)
+                next_level_block.rect.x = random.randrange(SCREEN_WIDTH - next_level_block.rect.width)
+                next_level_block.rect.y = random.randrange(SCREEN_HEIGHT - next_level_block.rect.height)
+
+        # Перевірка, чи гравець доторкнувся до монстрів
+        if pygame.sprite.spritecollide(player, monsters, False):
+            show_game_over_screen(screen)
+            current_level = 1
+            level = Level(current_level)
+            player.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+            monsters.empty()
+            for _ in range(current_level * 2):  
+                monster = Monster(platforms)
+                monsters.add(monster)
+
+        level.draw(screen)
+        screen.blit(player.image, player.rect)
+        monsters.draw(screen)
+        next_level_blocks.draw(screen)
+        pygame.display.flip()
+        clock.tick(game_speed)
+
+# Основна функція гри
+def main():
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Super Mario Clone")
+
+    current_screen = "menu"
+    while True:
+        if current_screen == "menu":
+            current_screen = show_main_menu(screen)
+        elif current_screen == "settings":
+            current_screen = show_settings_menu(screen)
+        elif current_screen == "controls":
+            current_screen = show_controls_menu(screen)
+        elif current_screen == "levels":
+            current_screen = show_levels_menu(screen)
+        elif current_screen == "game":
+            current_screen = show_game_screen(screen)
+        elif current_screen == "back":
+            current_screen = "menu"
+
+if __name__ == "__main__":
+    main()
