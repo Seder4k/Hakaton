@@ -89,11 +89,8 @@ class Platform(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
         self.rect.y = random.randrange(SCREEN_HEIGHT - self.rect.height)
-# Приклад завантаження зображень
-background_image = pygame.image.load("background.jpg")
-player_image = pygame.image.load("player.png")
-enemy_image = pygame.image.load("enemy.png")
-next_level_block_image = pygame.image.load("next_level_block.png")
+
+
 
 # Клас для переходу на наступний рівень
 class NextLevelBlock(pygame.sprite.Sprite):
@@ -351,12 +348,14 @@ def show_game_screen(screen):
         # Перевірка, чи гравець досяг переходу на наступний рівень
         if pygame.sprite.spritecollide(player, next_level_blocks, False):
             current_level += 1
-            if current_level > 5:
+            if current_level > 7:
                 show_win_screen(screen)
                 current_level = 1
                 level = Level(current_level)
+                platforms = level.platform_list     
             else:
                 level = Level(current_level)
+                platforms = level.platform_list
                 monsters.empty()
                 for _ in range(current_level * 2):  
                     monster = Monster(platforms)
