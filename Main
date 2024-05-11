@@ -16,7 +16,7 @@ GREEN = (0, 255, 0)
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 window=pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
-pygame.display.set_caption("Лабіринт")
+pygame.display.set_caption("Скорлінг")
 game=True
 # Клас для плеєра
 class Settings:
@@ -114,16 +114,11 @@ class NextLevelBlock(pygame.sprite.Sprite,Settings):
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
         self.rect.y = random.randrange(SCREEN_HEIGHT - self.rect.height)
-# Приклад завантаження зображень
-fon = Settings("menu.jpg",0,0,SCREEN_WIDTH,SCREEN_HEIGHT)
-player= Player("p.png",0,10,32,32,10)
-platform =Platform("b.png")
-monster = Monster("e.png")
-next_level_block = NextLevelBlock("b.png")
+
 # Функція для відображення повідомлення про програш
 def show_game_over_screen(screen):
     screen.fill(RED)
-    font = pygame.font.SysFont(None, 50)
+    font = pygame.font.SysFont(None, 30)
     text = font.render("Ви програли. Натисніть SPACE для повторної гри.", True, WHITE)
     screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - text.get_height()//2))
     pygame.display.flip()
@@ -141,7 +136,7 @@ def show_game_over_screen(screen):
 # Функція для відображення повідомлення про перемогу
 def show_win_screen(screen):
     screen.fill(BLUE)
-    font = pygame.font.SysFont(None, 50)
+    font = pygame.font.SysFont(None, 30)
     text = font.render("Ви перемогли! Натисніть SPACE для повторної гри.", True, WHITE)
     screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - text.get_height()//2))
     pygame.display.flip()
@@ -160,21 +155,21 @@ def show_win_screen(screen):
 def show_main_menu(screen):
     screen.fill(BLACK)
     font = pygame.font.SysFont(None, 50)
-    title_text = font.render("Super Mario Clone", True, WHITE)
+    title_text = font.render("Скролінг", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 100))
 
     # Кнопки меню
     button_font = pygame.font.SysFont(None, 30)
 
-    start_button = button_font.render("Start Game", True, WHITE)
+    start_button = button_font.render("Почати гру", True, WHITE)
     start_button_rect = start_button.get_rect(center=(SCREEN_WIDTH//2, 250))
     screen.blit(start_button, start_button_rect)
 
-    settings_button = button_font.render("Settings", True, WHITE)
+    settings_button = button_font.render("Настройки", True, WHITE)
     settings_button_rect = settings_button.get_rect(center=(SCREEN_WIDTH//2, 320))
     screen.blit(settings_button, settings_button_rect)
 
-    quit_button = button_font.render("Quit", True, WHITE)
+    quit_button = button_font.render("Вийти", True, WHITE)
     quit_button_rect = quit_button.get_rect(center=(SCREEN_WIDTH//2, 390))
     screen.blit(quit_button, quit_button_rect)
 
@@ -199,20 +194,20 @@ def show_main_menu(screen):
 def show_settings_menu(screen):
     screen.fill(BLACK)
     font = pygame.font.SysFont(None, 50)
-    title_text = font.render("Settings", True, WHITE)
+    title_text = font.render("Настройки", True, WHITE)
     screen.blit(title_text, (SCREEN_WIDTH//2 - title_text.get_width()//2, 100))
 
     button_font = pygame.font.SysFont(None, 30)
 
-    controls_button = button_font.render("Controls", True, WHITE)
+    controls_button = button_font.render("Контролярі", True, WHITE)
     controls_button_rect = controls_button.get_rect(center=(SCREEN_WIDTH//2, 250))
     screen.blit(controls_button, controls_button_rect)
 
-    levels_button = button_font.render("Levels", True, WHITE)
+    levels_button = button_font.render("Уравень", True, WHITE)
     levels_button_rect = levels_button.get_rect(center=(SCREEN_WIDTH//2, 320))
     screen.blit(levels_button, levels_button_rect)
 
-    back_button = button_font.render("Back", True, WHITE)
+    back_button = button_font.render("Назад", True, WHITE)
     back_button_rect = back_button.get_rect(center=(SCREEN_WIDTH//2, 390))
     screen.blit(back_button, back_button_rect)
 
@@ -405,7 +400,7 @@ def show_game_screen(screen):
 # Основна функція гри
 def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Super Mario Clone")
+    pygame.display.set_caption("Скорлінг")
 
     current_screen = "menu"
     while True:
