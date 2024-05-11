@@ -15,9 +15,22 @@ GREEN = (0, 255, 0)
 # Розміри екрану
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+window=pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
+pygame.display.set_caption("Лабіринт")
+game=True
+# Клас для плеєра
+class Settings:
+    def __init__(self,image,x,y,w,h):
+        self.image=pygame.transform.scale(pygame.image.load(image),(w,h))
+        self.rect=self.image.get_rect()
+        self.rect.x=x
+        self.rect.y=y
+        
 
-# Клас для Маріо
-class Player(pygame.sprite.Sprite):
+    def draw(self):
+        window.blit(self.image,(self.rect.x,self.rect.y))
+
+class Player(pygame.sprite.Sprite,Settings):
     def __init__(self):
         super().__init__()
         self.image = pygame.Surface((32, 32))
@@ -58,7 +71,7 @@ class Level:
         self.platform_list.draw(screen)
 
 # Клас для монстрів
-class Monster(pygame.sprite.Sprite):
+class Monster(pygame.sprite.Sprite,Settings):
     def __init__(self, platforms):
         super().__init__()
         self.image = pygame.Surface((32, 32))
@@ -81,7 +94,7 @@ class Monster(pygame.sprite.Sprite):
             self.speed_y *= -1
 
 # Клас для перешкод
-class Platform(pygame.sprite.Sprite):
+class Platform(pygame.sprite.Sprite,Settings):
     def __init__(self):
         super().__init__()
         self.image = pygame.Surface((50, 50))  # Всі перешкоди мають однаковий розмір
@@ -93,7 +106,7 @@ class Platform(pygame.sprite.Sprite):
 
 
 # Клас для переходу на наступний рівень
-class NextLevelBlock(pygame.sprite.Sprite):
+class NextLevelBlock(pygame.sprite.Sprite,Settings):
     def __init__(self):
         super().__init__()
         self.image = pygame.Surface((40, 40))
@@ -101,7 +114,12 @@ class NextLevelBlock(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
         self.rect.y = random.randrange(SCREEN_HEIGHT - self.rect.height)
-
+# Приклад завантаження зображень
+fon = Settings("menu.jpg",0,0,SCREEN_WIDTH,SCREEN_HEIGHT)
+player= Player("p.png",0,10,32,32,10)
+platform =Platform("b.png")
+monster = Monster("e.png")
+next_level_block = NextLevelBlock("b.png")
 # Функція для відображення повідомлення про програш
 def show_game_over_screen(screen):
     screen.fill(RED)
@@ -213,6 +231,9 @@ def show_settings_menu(screen):
                     return "levels"
                 elif back_button_rect.collidepoint(mouse_pos):
                     return "back"
+
+
+
 
 # Функція для відображення меню налаштувань контролів
 def show_controls_menu(screen):
@@ -371,7 +392,7 @@ def show_game_screen(screen):
             player.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
             monsters.empty()
             for _ in range(current_level * 2):  
-                monster = Monster(platforms)
+                monster = Monster(platforms)    
                 monsters.add(monster)
 
         level.draw(screen)
